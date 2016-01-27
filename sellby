@@ -1,0 +1,16 @@
+#!/bin/bash
+
+printf '' > /etc/motd;
+
+for d in /srv/www/*/ ; do
+    if [[ -f "$d/sellbydate" ]] ; then
+        listeddate=`head -n 1 "$d/sellbydate"`;
+        sellbydate=$(date -d $listeddate +"%Y%m%d");
+        today=$(date +"%Y%m%d");
+        if [ $today -ge $sellbydate ] ; then
+            printf "IMPORTANT: Please delete the out-of-date site at $d !\n" >> /etc/motd;
+        fi
+    else
+        printf $(date +"%Y-%m-%d" -d "$DATE + 1 month") > "$d/sellbydate"
+    fi
+done
