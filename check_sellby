@@ -1,0 +1,36 @@
+#!/bin/bash
+
+exitval=0;
+message="";
+for d in /srv/www/*/ ; do
+    if [[ -f "$d/sellbydate" ]] ; then
+        listeddate=`head -n 1 "$d/sellbydate"`;
+        sellbydate=$(date -d $listeddate +"%Y%m%d");
+        amonthago=$(date -d "-1 month" +"%Y%m%d");
+        today=$(date +"%Y%m%d");
+        if [ $today -ge $sellbydate ] ; then
+            if [ $amonthago -ge $sellbydate ] ; then
+                addmessage="Very out-of-date site at $d";
+                newexitval=2
+            else
+                addmessage="Out-of-date site at $d";
+                newexitval=1
+            fi
+            if [[ "$message" = "" ]] ; then
+                message="$addmessage";
+            else
+                message="$message $addmessage";
+            fi
+            if [ $exitval -lt $newexitval ] ; then
+                exitval=$newexitval;
+            fi
+        fi
+    fi
+done
+
+if [ $exitval == 0 ] ; then
+    echo 'All sites fresh';
+else
+    echo $message;
+fi
+exit $exitval
